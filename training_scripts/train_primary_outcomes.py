@@ -1,4 +1,10 @@
+import json
+from transformers import AutoTokenizer
+from transformers import DataCollatorForTokenClassification
+from transformers import AutoModelForTokenClassification
+
 from transformers_ner_train_functions import *
+
 
 if __name__ == '__main__':
     directory = r'..\data\Primary_Outcomes'
@@ -12,7 +18,9 @@ if __name__ == '__main__':
 
     output_dir = r"..\models\biobert_po"
 
-    train_on_files(filenames, directory, labels_mapping, model_biobert, tokenizer, data_collator, output_dir)
+    train_on_files(filenames, directory, labels_mapping, model_biobert, tokenizer, data_collator, output_dir,
+                   test_size=0.1,
+                    num_train_epochs=5)
 
 
 
