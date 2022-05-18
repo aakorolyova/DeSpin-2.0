@@ -1,10 +1,7 @@
 import os
-import json
 import torch
 import numpy as np
-from transformers import AutoTokenizer
-from transformers import DataCollatorForTokenClassification
-from transformers import AutoModelForTokenClassification, TrainingArguments, Trainer
+from transformers import TrainingArguments, Trainer
 from sklearn.model_selection import train_test_split
 
 
@@ -15,13 +12,14 @@ def load_dataset(filelist, directory):
     sentences = []
     labels = []
     for filename in filelist:
+        print(filename)
         with open(os.path.join(directory, filename), 'r', encoding='utf-8') as input_file:
             sentence = []
             sentence_labels = []
             for l in input_file.readlines():
                 l = l.strip()
                 if l == '':
-                    if len(sentence) > 0:
+                    if len(sentence) > 0 and sentence not in sentences:
                         sentences.append(sentence)
                         labels.append(sentence_labels)
                     sentence = []
@@ -54,7 +52,7 @@ def labels_to_num(labels, labels_mapping):
 
 
 def tokenize_and_align_labels(sentences, labels, tokenizer):
-    tokenized_inputs = tokenizer(sentences, truncation=True, is_split_into_words=True)
+    tokenized_inputs = tokenizer(sentences, padding=True, truncation=True, max_length=2000, is_split_into_words=True)
 
     labels_aligned = []
     for i, label in enumerate(labels):
@@ -103,7 +101,7 @@ def encode_tags(tags, tag2id, encodings):
     return encoded_labels
 
 
-def train_on_files(filenames, directory, labels_mapping, model, tokenizer, data_collator, output_dir, test_size=.2):
+def train_on_files(filenames, directory, labels_mapping, model, tokenizer, data_collator, output_dir, test_size=.2, num_train_epochs=3):
     sentences, labels = load_dataset(filenames, directory)
     train_texts, val_texts, train_tags, val_tags = train_test_split(sentences, labels, test_size=test_size)
 
@@ -126,7 +124,7 @@ def train_on_files(filenames, directory, labels_mapping, model, tokenizer, data_
         learning_rate=2e-5,
         per_device_train_batch_size=16,
         per_device_eval_batch_size=16,
-        num_train_epochs=2,
+        num_train_epochs=num_train_epochs,
         weight_decay=0.01,
     )
 
