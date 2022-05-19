@@ -1,7 +1,6 @@
 from transformers_ner_predict_functions import *
 from transformers import AutoTokenizer
 from transformers import AutoModelForTokenClassification
-from transformers import AutoModelForSequenceClassification
 
 
 if __name__ == '__main__':
