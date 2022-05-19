@@ -1,11 +1,42 @@
 import os
 import torch
 import numpy as np
+from datasets import load_metric
 from transformers import TrainingArguments, Trainer
 from sklearn.model_selection import train_test_split
 
 
 os.environ["WANDB_DISABLED"] = "true"
+
+
+def compute_metrics(p):
+    metric = load_metric("seqeval")
+    predictions, labels = p
+    predictions = np.argmax(predictions, axis=2)
+
+    unique_labels = sorted(set([p for pred in predictions for p in pred]))
+    label_list = ['O']
+    for i in range((len(unique_labels) - 1) // 2):
+        label_list.append('B-Ent' + str(i))
+        label_list.append('I-Ent' + str(i))
+
+    # Remove ignored index (special tokens)
+    true_predictions = [
+        [label_list[p] for (p, l) in zip(prediction, label) if l != -100]
+        for prediction, label in zip(predictions, labels)
+    ]
+    true_labels = [
+        [label_list[l] for (p, l) in zip(prediction, label) if l != -100]
+        for prediction, label in zip(predictions, labels)
+    ]
+
+    results = metric.compute(predictions=true_predictions, references=true_labels)
+    return {
+        "precision": results["overall_precision"],
+        "recall": results["overall_recall"],
+        "f1": results["overall_f1"],
+        "accuracy": results["overall_accuracy"],
+    }
 
 
 def load_dataset(filelist, directory):
@@ -135,9 +166,29 @@ def train_on_files(filenames, directory, labels_mapping, model, tokenizer, data_
         eval_dataset=val_dataset,
         tokenizer=tokenizer,
         data_collator=data_collator,
+        compute_metrics=compute_metrics
     )
 
     trainer.train()
     trainer.save_model(output_dir)
+
+    metric = load_metric("seqeval")
+    predictions, labels, _ = trainer.predict(val_dataset)
+    predictions = np.argmax(predictions, axis=2)
+
+    label_list = {i: l for l, i in labels_mapping.items()}
+
+    # Remove ignored index (special tokens)
+    true_predictions = [
+        [label_list[p] for (p, l) in zip(prediction, label) if l != -100]
+        for prediction, label in zip(predictions, labels)
+    ]
+    true_labels = [
+        [label_list[l] for (p, l) in zip(prediction, label) if l != -100]
+        for prediction, label in zip(predictions, labels)
+    ]
+
+    results = metric.compute(predictions=true_predictions, references=true_labels)
+    print(results)
 
 
