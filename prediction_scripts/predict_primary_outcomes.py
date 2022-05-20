@@ -10,9 +10,8 @@ if __name__ == '__main__':
 
     # Specify the directory with input .txt files
     input_dir = r'..\test_data'
-    po1, _ = process_directory(input_dir, model_po, tokenizer)
-    print('Primary outcomes from primary outcomes model:', po1)
+    outcomes1 = process_directory(input_dir, model_po, tokenizer, entity_types = ['primary'])
+    print('Primary outcomes from primary outcomes model:', outcomes1)
 
-    po2, so2 = process_directory(input_dir, model_po_so, tokenizer)
-    print('Primary outcomes from primary and secondary outcomes model:', po2)
-    print('Secondary outcomes from primary and secondary outcomes model:', so2)
+    outcomes2 = process_directory(input_dir, model_po_so, tokenizer, entity_types = ['primary', 'secondary'])
+    print('Primary and Secondary outcomes from primary and secondary outcomes model:', outcomes2)

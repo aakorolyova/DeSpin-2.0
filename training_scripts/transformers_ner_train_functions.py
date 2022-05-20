@@ -134,7 +134,7 @@ def encode_tags(tags, tag2id, encodings):
 
 def train_on_files(filenames, directory, labels_mapping, model, tokenizer, data_collator, output_dir, test_size=.2, num_train_epochs=3):
     sentences, labels = load_dataset(filenames, directory)
-    train_texts, val_texts, train_tags, val_tags = train_test_split(sentences, labels, test_size=test_size)
+    train_texts, val_texts, train_tags, val_tags = train_test_split(sentences, labels, test_size=test_size, random_state=42)
 
     train_encodings = tokenizer(train_texts, is_split_into_words=True, return_offsets_mapping=True, padding=True,
                                 truncation=True)

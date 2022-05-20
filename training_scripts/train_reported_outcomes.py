@@ -17,7 +17,9 @@ if __name__ == '__main__':
 
     output_dir = r"..\models\biobert_rep"
 
-    train_on_files(filenames, directory, labels_mapping, model_biobert, tokenizer, data_collator, output_dir, test_size=0.1)
+    train_on_files(filenames, directory, labels_mapping, model_biobert, tokenizer, data_collator, output_dir,
+                   test_size=0.1,
+                   num_train_epochs=5)
 
 
 
