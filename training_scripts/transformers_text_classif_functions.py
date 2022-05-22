@@ -1,10 +1,29 @@
 import os
 import torch
+import numpy as np
+from datasets import load_metric
 from transformers import TrainingArguments, Trainer
 from sklearn.model_selection import train_test_split
 
 
 os.environ["WANDB_DISABLED"] = "true"
+
+
+def compute_metrics(p):
+    precision = load_metric("precision")
+    recall = load_metric("recall")
+    f1 = load_metric("f1")
+    accuracy = load_metric("accuracy")
+
+    logits, labels = p
+    predictions = np.argmax(logits, axis=-1)
+
+    return [
+        precision.compute(predictions=predictions, references=labels),
+        recall.compute(predictions=predictions, references=labels),
+        f1.compute(predictions=predictions, references=labels),
+        accuracy.compute(predictions=predictions, references=labels),
+    ]
 
 
 def load_dataset(filelist, directory):
@@ -79,9 +98,25 @@ def train_on_files(filenames, directory, model, tokenizer, data_collator, output
         eval_dataset=val_dataset,
         tokenizer=tokenizer,
         data_collator=data_collator,
+        compute_metrics=compute_metrics
     )
 
     trainer.train()
     trainer.save_model(output_dir)
+
+    precision = load_metric("precision")
+    recall = load_metric("recall")
+    f1 = load_metric("f1")
+    accuracy = load_metric("accuracy")
+    predictions, labels, _ = trainer.predict(val_dataset)
+    predictions = np.argmax(predictions, axis=-1)
+
+    results = [
+        precision.compute(predictions=predictions, references=labels),
+        recall.compute(predictions=predictions, references=labels),
+        f1.compute(predictions=predictions, references=labels),
+        accuracy.compute(predictions=predictions, references=labels),
+    ]
+    print(results)
 
 

@@ -2,7 +2,7 @@ from transformers import AutoTokenizer
 from transformers import DefaultDataCollator
 from transformers import AutoModelForSequenceClassification
 
-from transformers_pairs_classif_functions import *
+from transformers_text_classif_functions import *
 
 
 if __name__ == '__main__':
