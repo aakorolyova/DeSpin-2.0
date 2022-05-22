@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from nltk.tokenize import sent_tokenize
 
 
 def predict_po(encoded_input, model):
@@ -35,8 +36,8 @@ def extract_outcome_text(encoded_input, labels, tokenizer, entity_types: list):
 
 def process_text(text, model, tokenizer, entity_types):
     outcomes = []
-    for paragraph in text.split('\n'):
-        encoded_input = tokenizer(paragraph, padding=True, truncation=True, max_length=2000, return_tensors='pt')
+    for sentence in sent_tokenize(text):
+        encoded_input = tokenizer(sentence, padding=True, truncation=True, max_length=2000, return_tensors='pt')
         labels = predict_po(encoded_input, model)
         outcome_texts = extract_outcome_text(encoded_input, labels, tokenizer, entity_types)
         outcomes.extend(outcome_texts)
